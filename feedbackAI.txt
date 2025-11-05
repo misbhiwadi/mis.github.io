@@ -1,0 +1,158 @@
+Subject: Feedback & Guidelines for Next Session
+
+Before we start the new session, a few important guidelines to avoid repeating earlier mistakes — please follow these going forward:
+
+Maintain context. Don’t lose the conversation context between commands — each command should follow the previous one unless the user explicitly asks to change topic.
+
+Never modify or delete code without permission. Always ask the user before making any changes to their code or removing files.
+
+Don’t use backups without approval. Do not pick or restore code from backups unless the user explicitly requests it.
+
+Only edit the requested page or file. If a user asks you to change something, confirm which file/page they mean before making edits. Re-confirm with the user when in doubt.
+
+Check dependencies and track versions before major changes. For any significant update, review all dependent components and keep versioned backups so you can safely revert accidental changes.
+
+Please follow these rules for every session. If anything is unclear, ask for clarification before proceeding.
+
+Below are some feedback if required this related changes then you can take help.
+
+CAROUSEL NAVIGATION ISSUE & FIX DOCUMENTATION
+==============================================
+
+DATE: 2025-11-02
+FILE: aluminium_fabrication.html
+CAROUSELS AFFECTED: carousel-facade, carousel-glass-film-new
+
+## ISSUE DESCRIPTION:
+- Carousel items were duplicating in main gallery
+- Navigation arrows and indicators not working properly
+- Multiple CSS styles applying simultaneously causing malfunction
+- Same issue previously occurred and was fixed in facade section
+
+## ROOT CAUSE:
+Owl Carousel and Bootstrap Carousel conflict:
+- Both carousel libraries trying to control same elements
+- Owl carousel initialization interfering with Bootstrap carousel functionality
+- CSS transitions and transforms causing display issues
+- No proper active/inactive item state management
+
+## SOLUTION APPLIED:
+
+### CSS FIX:
+```css
+#carousel-facade .carousel-inner .item {
+    display: block !important;
+    position: relative !important;
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+}
+
+#carousel-facade .carousel-inner .item.active {
+    display: block !important;
+}
+
+#carousel-facade .carousel-inner .item:not(.active) {
+    display: none !important;
+}
+```
+
+### JAVASCRIPT FIX:
+```javascript
+// Remove owl carousel conflicts
+$('#carousel-facade').removeClass('owl-carousel');
+
+if ($('#carousel-facade').data('owl.carousel')) {
+    $('#carousel-facade').data('owl.carousel').destroy();
+}
+
+// Setup Bootstrap carousel properly
+$('#carousel-facade').carousel('pause');
+
+$('#carousel-facade').carousel({
+    interval: false,
+    wrap: true,
+    pause: false
+});
+
+$('#carousel-facade').on('slid.bs.carousel', function () {
+    $(this).carousel('pause');
+});
+```
+
+## PATTERN FOR FUTURE FIXES:
+1. Add CSS fix after existing carousel fixes (around line 720)
+2. Add JavaScript fix after existing carousel JS (around line 2780)
+3. Use same pattern: remove owl carousel, setup Bootstrap carousel
+4. Replace carousel ID in both CSS and JS sections
+
+## CAROUSELS FIXED:
+- carousel-facade (Facade Exterior) ✅
+- carousel-glass-film-new (Glass Film) ✅
+
+## PREVENTION:
+- Always check for owl carousel conflicts when adding new carousels
+- Use Bootstrap carousel only, avoid mixing with owl carousel
+- Apply this same CSS/JS pattern for any new carousel additions
+- Test navigation arrows and indicators after adding new carousels
+
+## COMMAND TO REMEMBER:
+When adding new carousel with ID "carousel-newname":
+1. Add CSS block replacing "carousel-newname" 
+2. Add JS block replacing "carousel-newname"
+3. Follow exact same pattern as carousel-facade fix
+
+==============================================
+
+## GLASS FILM DUPLICATION & SCROLL ISSUE
+DATE: 2025-11-02
+
+### ISSUE DESCRIPTION:
+- Glass Film item appeared TWICE in main carousel
+- Original Glass Film had broken scroll behavior (wrong anchor)
+- Overlay "View more" link pointing to non-existent section
+
+### ROOT CAUSE:
+1. **Duplication**: Two separate Glass Film gallery items existed
+   - Original: Lines ~1081 (linked to film.html)
+   - Duplicate: Lines 1488-1505 (linked to carousel-glass-film-new)
+
+2. **Broken Scroll**: Original item had mismatched anchor references
+   - Overlay link: pointed to 'glass-film-section' (doesn't exist)
+   - Title/button links: pointed to 'film.html' (external page)
+   - Should point to: 'carousel-glass-film-new' (actual carousel)
+
+### SOLUTION APPLIED:
+
+#### 1. REMOVED DUPLICATE:
+```html
+<!-- REMOVED: Lines 1488-1505 -->
+<!-- Glass Film Product Item -->
+<div class="gallery-item">...</div>
+```
+
+#### 2. FIXED ORIGINAL ITEM LINKS:
+```html
+<!-- BEFORE -->
+<a href="film.html">Glass Film</a>
+<a href="film.html" class="btn-one">View more</a>
+<a href="javascript:void(0);" onclick="...glass-film-section...">View more</a>
+
+<!-- AFTER -->
+<a href="javascript:void(0);" onclick="...carousel-glass-film-new...">Glass Film</a>
+<a href="javascript:void(0);" onclick="...carousel-glass-film-new..." class="btn-one">View more</a>
+<a href="javascript:void(0);" onclick="...carousel-glass-film-new...">View more</a>
+```
+
+### PREVENTION CHECKLIST:
+1. **Before adding new carousel items**: Check if item already exists in main gallery
+2. **Consistent anchor naming**: Use same ID for all links (overlay, title, button)
+3. **Test scroll behavior**: Verify all "View more" links point to correct carousel section
+4. **Remove external links**: Replace file.html links with carousel scroll behavior
+
+### PATTERN FOR FUTURE:
+When adding new product carousel:
+1. Check main gallery for existing item first
+2. If exists: Update links to point to new carousel ID
+3. If new: Add single item with consistent carousel anchor links
+4. Test all three link types: overlay, title, button
