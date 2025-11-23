@@ -68,8 +68,8 @@
 
 
 
-   //Submenu Dropdown Toggle
-	if($('.site-header li.dropdown ul').length){
+   //Submenu Dropdown Toggle - Only for desktop
+	if($('.site-header li.dropdown ul').length && window.innerWidth > 767){
 		$('.site-header li.dropdown').append('<div class="dropdown-btn"><span class="fa fa-angle-down"></span></div>');
 		
 		//Dropdown Button
